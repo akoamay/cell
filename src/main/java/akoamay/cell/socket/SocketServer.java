@@ -8,10 +8,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.HashMap;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class SocketServer {
     private int port;
     private ExecutorService executor = Executors.newCachedThreadPool();
-    private SocketEventListener listener;
+    private SocketServerEventListener listener;
     private HashMap<InetSocketAddress, ServerTask> clientsMap = new HashMap<InetSocketAddress, ServerTask>();
 
     public SocketServer(int port) {
@@ -22,7 +25,9 @@ public class SocketServer {
         ServerSocket ss = null;
         try {
             ss = new ServerSocket(port);
+            log.debug("SocketServer waiting");
             Socket sc = ss.accept();
+            log.info(sc.toString() + " has connected");
             ServerTask task = new ServerTask(sc);
             task.addDataReceivedListener(new DataReceivedListener() {
                 @Override
@@ -34,7 +39,7 @@ public class SocketServer {
             clientsMap.put(new InetSocketAddress(sc.getInetAddress(), sc.getPort()), task);
             executor.submit(new ServerTask(sc));
         } catch (IOException e) {
-
+            log.error("IOE", e);
         } finally {
             if (ss != null && !ss.isClosed()) {
                 try {
@@ -50,7 +55,7 @@ public class SocketServer {
         task.send(object);
     }
 
-    public void addSocketEventListener(SocketEventListener listener) {
+    public void addEventListener(SocketServerEventListener listener) {
         this.listener = listener;
     }
 

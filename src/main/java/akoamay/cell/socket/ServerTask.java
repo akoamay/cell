@@ -5,6 +5,9 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.Callable;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ServerTask implements Callable<Void> {
     private Socket sc = null;
     private DataReceivedListener dataReceivedListener;
