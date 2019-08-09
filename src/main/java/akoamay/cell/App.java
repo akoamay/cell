@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 
 import akoamay.cell.socket.SocketClient;
 import akoamay.cell.socket.SocketServer;
+import akoamay.cell.socket.SocketServerEventListener;
 import akoamay.cell.socket.SocketClientEventListener;
 
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,33 @@ public class App {
     public App(String mode) {
         if (mode.equals("s")) {
             SocketServer server = new SocketServer(1234);
+
+            server.addEventListener(new SocketServerEventListener() {
+
+                @Override
+                public void onError(Exception e) {
+
+                }
+
+                @Override
+                public void onDisconnected(InetSocketAddress address) {
+                    log.info("onDisconnected");
+
+                }
+
+                @Override
+                public void onDataReceived(InetSocketAddress address, Object data) {
+                    log.info("onDataReceived from " + address.toString() + " data=" + data.toString());
+                }
+
+                @Override
+                public void onConnected(InetSocketAddress address) {
+                    log.info("onConnected from " + address);
+                }
+            });
+
             server.start();
+
         } else {
             InetSocketAddress address = new InetSocketAddress("localhost", 1234);
 
@@ -40,6 +67,7 @@ public class App {
 
                 @Override
                 public void onError(Exception e) {
+                    log.info("error:" + e.toString());
 
                 }
 

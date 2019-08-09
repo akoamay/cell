@@ -29,13 +29,20 @@ public class SocketClient {
                         listener.onDataReceived(address, data);
                 }
             });
+            receiver.addDisconnectedListener(new DisconnectedListener() {
+                @Override
+                public void onDisconnected(InetSocketAddress address) {
+                    if (listener != null)
+                        listener.onDisconnected(address);
+                }
+            });
             receiver.start();
 
             if (listener != null)
                 listener.onConnected(address);
         } catch (UnknownHostException e) {
             if (listener != null)
-                listener.onConnected(address);
+                listener.onError(e);
         } catch (IOException e) {
             if (sc != null) {
                 try {
@@ -45,6 +52,8 @@ public class SocketClient {
             }
             if (receiver != null)
                 receiver.terminate();
+            if (listener != null)
+                listener.onError(e);
         }
     }
 

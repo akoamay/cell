@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.HashMap;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -35,11 +36,23 @@ public class SocketServer {
                     listener.onDataReceived(task.getAddress(), data);
                 }
             });
+            task.addDisconnectedListener(new DisconnectedListener() {
+                @Override
+                public void onDisconnected(InetSocketAddress address) {
+                    clientsMap.remove(address);
+                    listener.onDisconnected(address);
+                }
+            });
 
-            clientsMap.put(new InetSocketAddress(sc.getInetAddress(), sc.getPort()), task);
-            executor.submit(new ServerTask(sc));
+            InetSocketAddress address = new InetSocketAddress(sc.getInetAddress(), sc.getPort());
+            clientsMap.put(address, task);
+            executor.submit(task);
+            if (listener != null)
+                listener.onConnected(address);
+
         } catch (IOException e) {
             log.error("IOE", e);
+            listener.onError(e);
         } finally {
             if (ss != null && !ss.isClosed()) {
                 try {
@@ -55,7 +68,7 @@ public class SocketServer {
         task.send(object);
     }
 
-    public void addEventListener(SocketServerEventListener listener) {
+    public void addEventListener(@NonNull SocketServerEventListener listener) {
         this.listener = listener;
     }
 

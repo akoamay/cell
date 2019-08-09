@@ -32,11 +32,13 @@ public class DataReceiver extends Thread {
                 ObjectInputStream ois = new ObjectInputStream(sc.getInputStream());
                 if (dataReceivedListener != null)
                     dataReceivedListener.onDataReceived(ois.readObject());
+                Thread.sleep(1000);
             } catch (Exception e) {
                 log.error("ece", e);
-                if (disconnectedListener != null)
-                    // disconnectedListener.onDisconnected(new InetSocketAddress(sc.get, port));
-                    terminate();
+                if (disconnectedListener != null) {
+                    disconnectedListener.onDisconnected(new InetSocketAddress(sc.getInetAddress(), sc.getPort()));
+                }
+                terminate();
             }
         }
     }
