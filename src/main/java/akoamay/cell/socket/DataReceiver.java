@@ -34,7 +34,7 @@ public class DataReceiver extends Thread {
                     dataReceivedListener.onDataReceived(ois.readObject());
                 Thread.sleep(1000);
             } catch (Exception e) {
-                log.error("ece", e);
+                log.error(e.getMessage(), e);
                 if (disconnectedListener != null) {
                     disconnectedListener.onDisconnected(new InetSocketAddress(sc.getInetAddress(), sc.getPort()));
                 }
@@ -45,7 +45,7 @@ public class DataReceiver extends Thread {
 
     public void terminate() {
         isTerminate = true;
-        log.info("thread will be terminated");
+        log.debug("thread will be terminated");
     }
 
 }

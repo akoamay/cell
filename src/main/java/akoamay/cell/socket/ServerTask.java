@@ -23,12 +23,6 @@ public class ServerTask implements Callable<Void> {
 
     public void addDisconnectedListener(DisconnectedListener disconnectedListener) {
         this.disconnectedListener = disconnectedListener;
-        if (ServerTask.this.disconnectedListener == null) {
-            log.info("NULL!!!!!");
-        } else {
-            log.info("NOT NULL!!!!!");
-
-        }
     }
 
     public void addDataReceivedListener(DataReceivedListener dataReceivedListener) {
@@ -38,28 +32,22 @@ public class ServerTask implements Callable<Void> {
     @Override
     public Void call() {
 
-        if (this.disconnectedListener == null) {
-            // if (this.sc == null) {
-            log.info("NULL!!!!!");
-        } else {
-            log.info("NOT NULL!!!!!");
+        DataReceiver receiver = new DataReceiver(sc);
+        receiver.addDataReceivedListener(new DataReceivedListener() {
+            @Override
+            public void onDataReceived(Object data) {
+                dataReceivedListener.onDataReceived(data);
+            }
+        });
 
-        }
+        receiver.addDisconnectedListener(new DisconnectedListener() {
+            @Override
+            public void onDisconnected(InetSocketAddress address) {
+                disconnectedListener.onDisconnected(address);
+            }
+        });
+        receiver.start();
 
-        /*
-         * DataReceiver receiver = new DataReceiver(sc);
-         * receiver.addDataReceivedListener(new DataReceivedListener() {
-         * 
-         * @Override public void onDataReceived(Object data) {
-         * ServerTask.this.dataReceivedListener.onDataReceived(data); } });
-         * receiver.addDisconnectedListener(new DisconnectedListener() {
-         * 
-         * @Override public void onDisconnected(InetSocketAddress address) {
-         * log.info(">>>>>>>>>>"); if (ServerTask.this.disconnectedListener == null) {
-         * log.info("NULL!!!!!"); }
-         * ServerTask.this.disconnectedListener.onDisconnected(address);
-         * log.info("<<<<<<<<<<"); } }); receiver.start();
-         */
         return null;
     }
 

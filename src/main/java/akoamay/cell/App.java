@@ -29,6 +29,7 @@ public class App {
                 @Override
                 public void onDisconnected(InetSocketAddress address) {
                     log.info("onDisconnected");
+                    log.info(String.valueOf(server.getClientsMap().size()));
 
                 }
 
@@ -40,6 +41,7 @@ public class App {
                 @Override
                 public void onConnected(InetSocketAddress address) {
                     log.info("onConnected from " + address);
+                    log.info(String.valueOf(server.getClientsMap().size()));
                 }
             });
 
