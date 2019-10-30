@@ -1,7 +1,9 @@
 package akoamay.cell;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CountDownLatch;
 
+import akoamay.cell.message.Message;
 import akoamay.cell.socket.SocketClient;
 import akoamay.cell.socket.SocketServer;
 import akoamay.cell.socket.SocketServerEventListener;
@@ -35,7 +37,9 @@ public class App {
 
                 @Override
                 public void onDataReceived(InetSocketAddress address, Object data) {
-                    log.info("onDataReceived from " + address.toString() + " data=" + data.toString());
+                    Message msg = (Message)data;
+                    //log.info("onDataReceived from " + address.toString() + " data=" + data.toString());
+                    log.info("onDataReceived from " + address.toString() + " data=" + msg.getData().length);
                 }
 
                 @Override
@@ -50,7 +54,31 @@ public class App {
         } else {
             InetSocketAddress address = new InetSocketAddress("localhost", 1234);
 
-            SocketClient client = new SocketClient(address, new SocketClientEventListener() {
+            CountDownLatch latch = new CountDownLatch(1);
+            SocketClient client = new SocketClient(address, new MySocketClientEventListener(latch));
+            try{
+                latch.await();
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+
+            System.out.println( "let:s wait" );
+            System.out.println( "here" );
+
+            int len = 8192;
+            int size = len * len * 2;
+            byte[] map = new byte[size];
+
+            for (int i = 0; i < size; i++ ){
+                map[i] = (byte)i;
+            }
+
+            Message msg = new Message();
+            msg.setData(map);
+            client.send(msg);
+            
+            /*
+            new SocketClientEventListener() {
 
                 @Override
                 public void onConnected(InetSocketAddress address) {
@@ -74,7 +102,33 @@ public class App {
                 }
 
             });
+            */
 
         }
+    }
+
+    class MySocketClientEventListener implements SocketClientEventListener{
+        private CountDownLatch latch;
+        public MySocketClientEventListener(CountDownLatch latch){
+            this.latch = latch;
+        }
+
+        @Override
+        public void onConnected(InetSocketAddress address) {
+            latch.countDown();
+        }
+
+        @Override
+        public void onDisconnected(InetSocketAddress address) {
+        }
+
+        @Override
+        public void onDataReceived(InetSocketAddress address, Object data) {
+        }
+
+        @Override
+        public void onError(Exception e) {
+        }
+        
     }
 }
